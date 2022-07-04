@@ -1,0 +1,40 @@
+{% extends 'index.html'%}
+  {% block content %}
+
+      <div class="container w-25 mt-3">
+        <form action="" method='POST'>
+        
+            <div class="mb-3 p-2">
+              <label for="exampleFormControlTextarea1" class="form-label">Enter Id</label>
+              <input type="number" class="form-control" id="" placeholder="Enter id" name="id"></input>
+            </div>
+            <div class="mb-3 p-2">
+              <label for="exampleFormControlTextarea1" class="form-label">Enter name</label>
+              <input type="text" class="form-control" id="" placeholder="Enter name" name="ename"></input>
+            </div>
+            <div class="mb-3 p-2">
+              <label for="exampleFormControlTextarea1" class="form-label">Enter E-mail</label>
+          
+              <input type="email" class="form-control" id="" placeholder="Enter email" name="email"></input>
+            </div>
+            <div class="mb-3 p-2">
+              <label for="exampleFormControlTextarea1" class="form-label">Password</label>
+              <input type="password" class="form-control" id="" placeholder="Enter Password" name="password"></input>
+            </div>
+            <div class="form-check py-2 ">
+              <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+              <label class="form-check-label" for="flexCheckDefault">
+                Remember me
+              </label>
+            </div>
+        <div class="text-center p-2">
+        
+            <input class="btn btn-primary" type="submit" value="Add">
+        
+        </div>
+        
+        
+        </form>
+        
+        </div>
+        {% endblock content %}
