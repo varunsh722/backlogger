@@ -1,79 +1,62 @@
-from flask import Flask,render_template,url_for,redirect
+from flask import Flask,render_template,url_for,redirect,request,flash
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin, login_user, LoginManager,login_required,logout_user,current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import InputRequired, length, ValidationError
-from flask_bcrypt import Bcrypt
+from flask_login import LoginManager,login_user,UserMixin
 
 app = Flask(__name__)
-db=SQLAlchemy(app)
-bcrypt=Bcrypt(app)
-app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///database.db'
-app.config['SECRET_KEY']='thisisasecretkey'
 
+app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///mydatabase.db'
+app.config['SECRET_KEY']='thisisasecretkey'
+db=SQLAlchemy(app)
 login_manager=LoginManager()
 login_manager.init_app(app)
-login_manager.login_view="Login"
+
+class User(UserMixin,db.Model):
+    id=db.Column(db.Integer, primary_key=True)
+    username=db.Column(db.String(80), unique=True, nullable=False)
+    email=db.Column(db.String,  nullable=False)
+    password=db.Column(db.String, nullable=False)
+    def __repr__(self):
+       return '<User %r>' % self.username 
 
 @login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
-class User(db.Model, UserMixin):
-    id=db.Column(db.Integer, primary_key=True)
-    username=db.Column(db.String(40), nullable=False,unique=True)
-    password=db.Column(db.String(40), nullable=False)
-
-
-class RegisterForm(FlaskForm):
-    username=StringField(validators=[InputRequired(),length(
-min=4, max=20)],render_kw={"placeholder":"Username"})   
-
-password=StringField(validators=[InputRequired(),length(
-min=4, max=20)],render_kw={"placeholder":"Password"}) 
-
-submit=SubmitField("Register")
-
-class LoginForm(FlaskForm):
- username=StringField(validators=[InputRequired(),length(
-min=4, max=20)],render_kw={"placeholder":"Username"})   
-
-password=StringField(validators=[InputRequired(),length(
-min=4, max=20)],render_kw={"placeholder":"Password"}) 
-
-submit=SubmitField("Login")
-
-def validate_username(self,username):
-    existing_user_username=User.query.filter_by(
-    username=username.data).first()
-
-    if existing_user_username:
-        raise ValidationError(
-       "That username already exists. Please choose a different one.")
+def load_user(id):
+    return User.query.get(int(id))
 
 @app.route('/')
 @app.route('/home')
 def home():
     return render_template('index.html')
 
-@app.route('/register')
+@app.route('/register',methods=['GET','POST'])
 def register():
-    form=RegisterForm()
-
-    if form.validate_on_submit():
-      hashed_password=bcrypt.generate_password_hash(form.password.data)
-      new_user=User(username=form.username.data, password=hashed_password)
-      db.session.add(new_user)
+    if request.method=='POST':
+      id=request.form.get('id')
+      username=request.form.get('ename')
+      email=request.form.get('email')
+      password=request.form.get('password')
+      user=User(id=id,username=username,email=email,password=password)
+      db.session.add(user)
       db.session.commit()
+      flash('User has been registered successfully','success')
       return redirect(url_for('login'))
 
-    return render_template('userregister.html',form=form)
+    return render_template('AddTeacher.html')
 
 @app.route('/login',methods=['GET','POST'])
 def login():
-    form=LoginForm()
-    return render_template('UserLogin.html',form=form)
+    if request.method=='POST':
+      username=request.form.get('username')
+      password=request.form.get('password')
+      user=User.query.filter_by(username=username).first()
+      if user and password==user.password:
+        login_user(user)
+        return redirect(url_for('/home'))
+      else:
+        flash('Invalid Credentials','warning')
+        return redirect(url_for('UserLogin'))
+
+    return render_template('UserLogin.html')
 
 @app.route('/about')
 def about():
